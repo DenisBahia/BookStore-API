@@ -1,0 +1,78 @@
+﻿@page "/authors/edit/{id}"
+@attribute [Authorize(Roles = "Administrator")]
+@inject IAuthorRepository _repo
+@inject NavigationManager _navManager
+@inject IToastService _toastService
+
+<h3 class="card-title">Edit Author</h3>
+<hr />
+<br />
+
+@if (Model == null)
+{
+    <LoadingMessage Message="Loading Author..." />
+}
+else
+{
+    <EditForm Model="Model" OnValidSubmit="EditAuthor">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div class="form-group">
+            <label for="firstname">First Name</label>
+            <InputText @bind-Value="Model.Firstname" class="form-control" id="firstname"></InputText>
+        </div>
+        <div class="form-group">
+            <label for="firstname">Last Name</label>
+            <InputText @bind-Value="Model.Lastname" class="form-control" id="lastname"></InputText>
+        </div>
+        <div class="form-group">
+            <label for="bio">Biography</label>
+            <InputTextArea @bind-Value="Model.Bio" class="form-control" id="bio"></InputTextArea>
+        </div>
+        <button class="btn btn-primary" type="submit">
+            <span class="oi oi-pencil"></span>
+            Save
+        </button>
+        <button class="btn btn-outline-secondary" @onclick="BackToList">
+            <span class="oi oi-media-skip-backward"></span>
+            Back to List
+        </button>
+    </EditForm>
+}
+
+@code {
+
+    [Parameter]
+    public string Id { get; set; }
+
+    private Author Model = new Author();
+    //private bool isFailed = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        int id = int.Parse(Id);
+        Model = await _repo.Get(Endpoints.AuthorsEndpoint, id);
+
+    }
+
+    private async Task EditAuthor()
+    {
+        bool isSuccess = await _repo.Update(Endpoints.AuthorsEndpoint, Model, Model.Id);
+        if (isSuccess)
+        {
+            _toastService.ShowSuccess("Author updated successfully.", "");
+            BackToList();
+        }
+        else
+        {
+            _toastService.ShowError("An error has occurred trying to update the Author.", "");
+            //isFailed = true;
+        }
+    }
+
+    private void BackToList()
+    {
+        _navManager.NavigateTo("/authors/");
+    }
+
+}

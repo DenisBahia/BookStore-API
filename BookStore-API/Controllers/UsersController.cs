@@ -39,10 +39,55 @@ namespace BookStore_API.Controllers
         }
 
         /// <summary>
+        /// Registers a new user
+        /// </summary>
+        /// <param name="userDTO"></param>
+        /// <returns></returns>
+        [Route("register")]
+        [HttpPost]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> Register([FromBody] UserDTO userDTO)
+        {
+            var location = getControllerActionNames();
+
+            try
+            {
+
+                _logger.LogInfo($"{location} register attempt {userDTO.EmailAddress}");
+
+                var user = new IdentityUser
+                {
+                    Email = userDTO.EmailAddress,
+                    UserName = userDTO.EmailAddress
+                };
+
+                var result = await _userManager.CreateAsync(user, userDTO.Password);
+                if (!result.Succeeded)
+                {
+                    foreach (var error in result.Errors)
+                    {
+                        _logger.LogError($"{location} {error.Code} {error.Description}");
+                    }
+                    return InternalError($"{location} error {userDTO.EmailAddress}");
+                }
+
+                return Ok(new { result.Succeeded });
+
+            }
+            catch (Exception e)
+            {
+
+                return InternalError($"{location}: {e.Message} - {e.InnerException}");
+            }
+        }
+
+        /// <summary>
         /// User login check
         /// </summary>
         /// <param name="userDTO"></param>
         /// <returns></returns>
+        [Route("login")]
         [AllowAnonymous]
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -55,18 +100,18 @@ namespace BookStore_API.Controllers
 
             try
             {
-                _logger.LogInfo($"{location} login attempt {userDTO.UserName}");
-                var result = await _signInManager.PasswordSignInAsync(userDTO.UserName, userDTO.Password, false, false);
+                _logger.LogInfo($"{location} login attempt {userDTO.EmailAddress}");
+                var result = await _signInManager.PasswordSignInAsync(userDTO.EmailAddress, userDTO.Password, false, false);
                 if (result.Succeeded)
                 {
-                    _logger.LogInfo($"{location} login success {userDTO.UserName}");
-                    var user = await _userManager.FindByNameAsync(userDTO.UserName);
+                    _logger.LogInfo($"{location} login success {userDTO.EmailAddress}");
+                    var user = await _userManager.FindByNameAsync(userDTO.EmailAddress);
                     var tokenString = await GenerateJSONWebToken(user);
                     return Ok(new { token = tokenString });
                 }
                 else
                 {
-                    _logger.LogInfo($"{location} login not auth {userDTO.UserName}");
+                    _logger.LogInfo($"{location} login not auth {userDTO.EmailAddress}");
                     return Unauthorized(userDTO);
                 }
             }

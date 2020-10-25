@@ -1,0 +1,59 @@
+﻿@page "/Register"
+@using BookStore_UI.Models
+@using BookStore_UI.Contracts
+
+@inject IAuthenticationRepository _authRepo
+@inject NavigationManager _navMan
+
+    <h3 class="card-title">Register Now</h3>
+    @if (isFailed)
+    {
+        <ErrorMessage Message="Something went wrong" />
+    }
+    <div class="card-body">
+        <EditForm Model="Model" OnValidSubmit="HandleRegistration">
+
+            <DataAnnotationsValidator></DataAnnotationsValidator>
+            <ValidationSummary></ValidationSummary>
+
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <InputText Id="email" class="form-control" @bind-Value="Model.EmailAddress" />
+                <ValidationMessage For="@(() => Model.EmailAddress)" />
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <InputText Id="password" type="password" class="form-control" @bind-Value="Model.Password" />
+                <ValidationMessage For="@(() => Model.Password)" />
+            </div>
+            <div class="form-group">
+                <label for="confirmPassword">Confirm Password</label>
+                <InputText Id="confirmPassword" type="password" class="form-control" @bind-Value="Model.ConfirmPassword" />
+                <ValidationMessage For="@(() => Model.ConfirmPassword)" />
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">Submit</button>
+        </EditForm>
+    </div>
+
+@code {
+
+    private RegistrationModel Model = new RegistrationModel();
+
+    private bool isFailed = false;
+
+    private async Task HandleRegistration()
+    {
+        isFailed = false;
+        var response = await _authRepo.Register(Model);
+        if (response)
+        {
+            _navMan.NavigateTo("/login");
+        }
+        else
+        {
+            isFailed = true;
+        }
+    }
+
+}

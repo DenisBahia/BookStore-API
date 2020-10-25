@@ -26,6 +26,8 @@ namespace BookStore_API.DTOs
         [Required]
         public string Lastname { get; set; }
         public string Bio { get; set; }
+
+        public virtual IList<BookDTO> Books { get; set; }
     }
 
     public class AuthorUpdateDTO

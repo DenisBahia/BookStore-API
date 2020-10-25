@@ -1,0 +1,118 @@
+﻿@page "/books/view/{id}"
+
+@inject IBookRepository _repo
+@inject NavigationManager _navManager
+
+<h3 class="card-title">View Book Details</h3>
+<hr />
+<br />
+
+@if (int.Parse(Id) < 1 || string.IsNullOrWhiteSpace(Id))
+{
+    <ErrorMessage Message="Invalid selection." />
+}
+
+@if (Model == null)
+{
+    <LoadingMessage Message="Loading Book Details..." />
+}
+else
+{
+
+    <div class="col-6">
+        <table class="table table-responsive">
+            <tr>
+                <td>
+                    <strong>Title</strong>
+                </td>
+                <td>@Model.Title</td>
+            </tr>
+            <tr>
+                <td>
+                    <strong>Author</strong>
+                </td>
+                <td>
+                    @if (Model.Author == null)
+                    {
+                        <span class="text-muted">No Author recorded</span>
+                    }
+                    else
+                    {
+                        <a href="/authors/view/@Model.Author.Id">
+                            @Model.Author.Firstname @Model.Author.Lastname
+                        </a>
+                    }
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <strong>Summary</strong>
+                </td>
+                <td>@Model.Summary</td>
+            </tr>
+            <tr>
+                <td>
+                    <strong>Published Year</strong>
+                </td>
+                <td>@Model.Year</td>
+            </tr>
+            <tr>
+                <td>
+                    <strong>ISBN</strong>
+                </td>
+                <td>@Model.Isbn</td>
+            </tr>
+        </table>
+    </div>
+    <div class="col-4">
+        <img src="uploads/@Model.Image"
+             style="height:300px; width:300px"/>
+        <h3 class="text-center text-info">@string.Format("{0:C}", Model.Price)</h3>
+    </div>
+
+}
+
+<AuthorizeView Roles="Administrator">
+    <button class="btn btn-outline-warning" @onclick="GoToEdit">
+        <span class="oi oi-pencil"></span>
+        Edit
+    </button>
+    <button class="btn btn-outline-danger" @onclick="GoToDelete">
+        <span class="oi oi-circle-x"></span>
+        Delete
+    </button>
+</AuthorizeView>
+
+<button class="btn btn-outline-secondary" @onclick="BackToList">
+    <span class="oi oi-media-skip-backward"></span>
+    Back to List
+</button>
+
+@code {
+    [Parameter]
+    public string Id { get; set; }
+
+    private Book Model = new Book();
+
+    private void GoToEdit()
+    {
+        _navManager.NavigateTo($"/books/edit/{Model.Id}");
+    }
+    private void GoToDelete()
+    {
+        _navManager.NavigateTo($"/books/delete/{Model.Id}");
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        int id = int.Parse(Id);
+        Model = await _repo.Get(Endpoints.BooksEndpoint, id);
+
+    }
+
+    private void BackToList()
+    {
+        _navManager.NavigateTo("/books/");
+    }
+
+}

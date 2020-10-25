@@ -20,6 +20,8 @@ namespace BookStore_API.DTOs
 
         public virtual AuthorDTO Author { get; set; }
 
+        public string File { get; set; }
+
     }
 
     public class BookCreateDTO
@@ -43,6 +45,8 @@ namespace BookStore_API.DTOs
         [Required]
         public int? AuthorId { get; set; }
 
+        public string File { get; set; }
+
     }
 
     public class BookUpdateDTO
@@ -55,6 +59,9 @@ namespace BookStore_API.DTOs
 
         public int? Year { get; set; }
 
+        [Required]
+        public string Isbn { get; set; }
+
         [StringLength(500)]
         public string Summary { get; set; }
 
@@ -63,6 +70,8 @@ namespace BookStore_API.DTOs
         public decimal? Price { get; set; }
 
         public int? AuthorId { get; set; } // Missing from the previous lesson. Ensure that you include.
+
+        public string File { get; set; }
 
     }
 

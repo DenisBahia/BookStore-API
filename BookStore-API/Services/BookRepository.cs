@@ -33,12 +33,24 @@ namespace BookStore_API.Services
 
         public async Task<IList<Book>> FindAll()
         {
-            return await _db.Books.ToListAsync();
+            return await _db.Books
+                .Include(q => q.Author)
+                .ToListAsync();
         }
 
         public async Task<Book> FindById(int id)
         {
-            return await _db.Books.FindAsync(id);
+            return await _db.Books
+                .Include(q => q.Author)
+                .FirstOrDefaultAsync(q => q.Id == id);
+        }
+
+        public async Task<string> GetImageFileName(int id)
+        {
+            var book = await _db.Books
+                .AsNoTracking()
+                .FirstOrDefaultAsync(q => q.Id == id);
+            return book.Image;
         }
 
         public async Task<bool> isExists(int id)
